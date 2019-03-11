@@ -1,0 +1,277 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>CoreWebApi</name>
+    </assembly>
+    <members>
+        <member name="T:CoreWebApi.Configuration.Api">
+            <summary>
+            API configurations
+            </summary>
+        </member>
+        <member name="F:CoreWebApi.Configuration.Api.DefaultCorsPolicyName">
+            <summary>
+            The default cors policy name
+            </summary>
+        </member>
+        <member name="M:CoreWebApi.Configuration.Api.ConfigureCors(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+            Configures the CORS policy.
+            </summary>
+            <param name="services">The services.</param>
+            <returns></returns>
+        </member>
+        <member name="M:CoreWebApi.Configuration.Api.ConfigureMvc(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+            Configures the MVC.
+            </summary>
+            <param name="services">The services.</param>
+            <returns></returns>
+        </member>
+        <member name="T:CoreWebApi.Configuration.Di">
+            <summary>
+            Class Di.
+            </summary>
+        </member>
+        <member name="M:CoreWebApi.Configuration.Di.ConfigureDependencyInjection(Microsoft.Extensions.DependencyInjection.IServiceCollection,Microsoft.Extensions.Configuration.IConfiguration)">
+            <summary>
+            Configures the dependency injection.
+            </summary>
+            <param name="services">The services.</param>
+            <param name="configuration">The configuration.</param>
+            <returns>The service provider.</returns>
+        </member>
+        <member name="T:CoreWebApi.Configuration.ErrorHandlingMiddleware">
+            <summary>
+            Errors handler
+            </summary>
+        </member>
+        <member name="F:CoreWebApi.Configuration.ErrorHandlingMiddleware._next">
+            <summary>
+                The next
+            </summary>
+        </member>
+        <member name="F:CoreWebApi.Configuration.ErrorHandlingMiddleware._environment">
+            <summary>
+                The environment
+            </summary>
+        </member>
+        <member name="F:CoreWebApi.Configuration.ErrorHandlingMiddleware._logger">
+            <summary>
+                The logger
+            </summary>
+        </member>
+        <member name="M:CoreWebApi.Configuration.ErrorHandlingMiddleware.#ctor(Microsoft.AspNetCore.Http.RequestDelegate,Microsoft.AspNetCore.Hosting.IHostingEnvironment,Microsoft.Extensions.Logging.ILoggerFactory)">
+            <summary>
+                Initializes a new instance of the <see cref="T:CoreWebApi.Configuration.ErrorHandlingMiddleware" /> class.
+            </summary>
+            <param name="next">The next.</param>
+            <param name="env">The env.</param>
+            <param name="loggerFactory">The logger factory.</param>
+        </member>
+        <member name="M:CoreWebApi.Configuration.ErrorHandlingMiddleware.Invoke(Microsoft.AspNetCore.Http.HttpContext)">
+            <summary>
+                Task to catch exceptions.
+            </summary>
+            <param name="context">The HttpContext.</param>
+        </member>
+        <member name="M:CoreWebApi.Configuration.ErrorHandlingMiddleware.HandleExceptionAsync(Microsoft.AspNetCore.Http.HttpContext,System.Exception)">
+            <summary>
+                Handles the exception asynchronously.
+            </summary>
+            <param name="context">The context.</param>
+            <param name="exception">The exception.</param>
+            <returns></returns>
+        </member>
+        <member name="T:CoreWebApi.Configuration.Logging">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:CoreWebApi.Configuration.Logging.UseSerilog(Microsoft.AspNetCore.Builder.IApplicationBuilder,Microsoft.AspNetCore.Hosting.IHostingEnvironment,Microsoft.Extensions.Configuration.IConfiguration,Microsoft.Extensions.Logging.ILoggerFactory)">
+            <summary>
+            Use the Serilog framework.
+            </summary>
+            <param name="app">The application.</param>
+            <param name="environment">The environment.</param>
+            <param name="configuration">The configuration.</param>
+            <param name="loggerFactory">The logger factory.</param>
+            <returns></returns>
+        </member>
+        <member name="T:CoreWebApi.Configuration.Security">
+            <summary>
+            Authentication configuration
+            </summary>
+        </member>
+        <member name="M:CoreWebApi.Configuration.Security.ConfigureHttps(Microsoft.Extensions.DependencyInjection.IServiceCollection,Microsoft.AspNetCore.Hosting.IHostingEnvironment)">
+            <summary>
+            Configures the HTTPS protocol.
+            </summary>
+            <param name="services">The services.</param>
+            <param name="environment">The environment.</param>
+            <returns></returns>
+        </member>
+        <member name="M:CoreWebApi.Configuration.Security.UseHttps(Microsoft.AspNetCore.Builder.IApplicationBuilder,Microsoft.AspNetCore.Hosting.IHostingEnvironment)">
+            <summary>
+            Uses the HTTPS protocol.
+            </summary>
+            <param name="app">The application.</param>
+            <param name="environment">The environment.</param>
+            <returns></returns>
+        </member>
+        <member name="T:CoreWebApi.Configuration.Swagger">
+            <summary>
+            Swagger configuration
+            </summary>
+        </member>
+        <member name="M:CoreWebApi.Configuration.Swagger.ConfigureSwagger(Microsoft.Extensions.DependencyInjection.IServiceCollection,Microsoft.Extensions.Configuration.IConfiguration)">
+            <summary>
+            Configures the swagger.
+            </summary>
+            <param name="services">The services.</param>
+            <param name="configuration">The configuration.</param>
+            <returns></returns>
+        </member>
+        <member name="M:CoreWebApi.Configuration.Swagger.UseSwagger(Microsoft.AspNetCore.Builder.IApplicationBuilder)">
+            <summary>
+                Use the swagger.
+            </summary>
+            <param name="app">The application.</param>
+            <returns></returns>
+        </member>
+        <member name="M:CoreWebApi.Configuration.Swagger.GetXmlCommentsFilePath">
+            <summary>
+                Gets the XML comments file path.
+            </summary>
+            <returns></returns>
+            <value>
+                The XML comments file path.
+            </value>
+        </member>
+        <member name="T:CoreWebApi.Controllers.ValuesController">
+            <summary>
+            Values controller
+            </summary>
+        </member>
+        <member name="M:CoreWebApi.Controllers.ValuesController.Get">
+            <summary>
+            Get values
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:CoreWebApi.Controllers.ValuesController.Get(System.Int32)">
+            <summary>
+             Get value
+            </summary>
+            <param name="id"></param>
+            <returns></returns>
+        </member>
+        <member name="M:CoreWebApi.Controllers.ValuesController.Post(System.String)">
+            <summary>
+            Store value
+            </summary>
+            <param name="value"></param>
+        </member>
+        <member name="M:CoreWebApi.Controllers.ValuesController.Put(System.Int32,System.String)">
+            <summary>
+            Upgrade value
+            </summary>
+            <param name="id"></param>
+            <param name="value"></param>
+        </member>
+        <member name="M:CoreWebApi.Controllers.ValuesController.Delete(System.Int32)">
+            <summary>
+            Delete value
+            </summary>
+            <param name="id"></param>
+        </member>
+        <member name="T:CoreWebApi.Filters.GlobalActionFilter">
+            <summary>
+            Global action filter which executes before and after requested MVC action.
+            </summary>
+            <seealso cref="T:Microsoft.AspNetCore.Mvc.Filters.IActionFilter" />
+        </member>
+        <member name="F:CoreWebApi.Filters.GlobalActionFilter._logger">
+            <summary>
+            The logger
+            </summary>
+        </member>
+        <member name="M:CoreWebApi.Filters.GlobalActionFilter.#ctor(Microsoft.Extensions.Logging.ILogger{CoreWebApi.Filters.GlobalActionFilter})">
+            <summary>
+            Initializes a new instance of the <see cref="T:CoreWebApi.Filters.GlobalActionFilter"/> class.
+            </summary>
+            <param name="logger">The logger.</param>
+        </member>
+        <member name="M:CoreWebApi.Filters.GlobalActionFilter.OnActionExecuting(Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext)">
+            <summary>
+            Called before the action executes, after model binding is complete.
+            </summary>
+            <param name="context">The <see cref="T:Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext" />.</param>
+        </member>
+        <member name="M:CoreWebApi.Filters.GlobalActionFilter.OnActionExecuted(Microsoft.AspNetCore.Mvc.Filters.ActionExecutedContext)">
+            <summary>
+            Called after the action executes, before the action result.
+            </summary>
+            <param name="context">The <see cref="T:Microsoft.AspNetCore.Mvc.Filters.ActionExecutedContext" />.</param>
+        </member>
+        <member name="T:CoreWebApi.Program">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:CoreWebApi.Program.Main(System.String[])">
+            <summary>
+            Main entry point
+            </summary>
+            <param name="args"></param>
+        </member>
+        <member name="M:CoreWebApi.Program.CreateWebHostBuilder(System.String[])">
+            <summary>
+            Create web host builder
+            </summary>
+            <param name="args"></param>
+            <returns></returns>
+        </member>
+        <member name="T:CoreWebApi.Startup">
+            <summary>
+            Startup class
+            </summary>
+        </member>
+        <member name="M:CoreWebApi.Startup.#ctor(Microsoft.Extensions.Configuration.IConfiguration,Microsoft.AspNetCore.Hosting.IHostingEnvironment)">
+            <summary>
+            Initializes a new instance of the <see cref="T:CoreWebApi.Startup"/> class.
+            </summary>
+            <param name="configuration">The configuration.</param>
+            <param name="currentEnvironment">The current environment.</param>
+        </member>
+        <member name="P:CoreWebApi.Startup.Configuration">
+            <summary>
+            Gets the configuration.
+            </summary>
+            <value>
+            The configuration.
+            </value>
+        </member>
+        <member name="P:CoreWebApi.Startup.CurrentEnvironment">
+            <summary>
+            Gets the environment.
+            </summary>
+            <value>
+            The environment.
+            </value>
+        </member>
+        <member name="M:CoreWebApi.Startup.ConfigureServices(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+            Configure services
+            </summary>
+            <param name="services"></param>
+        </member>
+        <member name="M:CoreWebApi.Startup.Configure(Microsoft.AspNetCore.Builder.IApplicationBuilder,Microsoft.Extensions.Logging.ILoggerFactory)">
+            <summary>
+            Configure
+            </summary>
+            <param name="app"></param>
+            <param name="loggerFactory"></param>
+        </member>
+    </members>
+</doc>
