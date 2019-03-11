@@ -32,16 +32,55 @@ node('.net')
 			echo("Building docker image...")
             dir("CoreWebApi")
             {
-				image = docker.build("corewebapi:DEV-${env.BUILD_NUMBER}")
+				//image = docker.build("corewebapi:DEV-${env.BUILD_NUMBER}")
+                image = docker.build("corewebapi")
 			}
 		}
-        stage('Push docker image ') {
+        stage('Push docker image') {
             echo "Push docker image to ECR repository"
             docker.withRegistry('https://524548625119.dkr.ecr.eu-west-3.amazonaws.com/corewebapi', 'ecr:eu-west-3:aws-access-credentials') 
             {
-                image.push("DEV-${env.BUILD_NUMBER}")
+                //image.push("DEV-${env.BUILD_NUMBER}")
+                image.push("latest")
             }
         }
+        stage('Deploy to ECS') 
+        {
+            echo "Deploy to ECS"        
+            def buildenv = docker.image('cloudbees/java-build-tools:0.0.7.1')
+            buildenv.inside 
+            {
+                wrap([$class: 'AmazonAwsCliBuildWrapper', credentialsId: 'aws-access-credentials', defaultRegion: 'eu-west-3']) 
+                {
+                    sh "aws ecs update-service --service corewebapi  --cluster ecs-default-cluster --desired-count 0"
+                    timeout(time: 5, unit: 'MINUTES') 
+                    {
+                        waitUntil 
+                        {
+                            sh "aws ecs describe-services --services corewebapi  --cluster ecs-default-cluster  > .amazon-ecs-service-status.json"
+                            def ecsServicesStatusAsJson = readFile(".amazon-ecs-service-status.json")
+                            def ecsServicesStatus = new groovy.json.JsonSlurper().parseText(ecsServicesStatusAsJson)
+                            println "$ecsServicesStatus"
+                            def ecsServiceStatus = ecsServicesStatus.services[0]
+                            return ecsServiceStatus.get('runningCount') == 0 && ecsServiceStatus.get('status') == "ACTIVE"
+                        }
+                    }
+                    sh "aws ecs update-service --service corewebapi --cluster ecs-default-cluster --desired-count 1"
+                    timeout(time: 5, unit: 'MINUTES') 
+                    {
+                        waitUntil 
+                        {
+                            sh "aws ecs describe-services --services corewebapi --cluster ecs-default-cluster > .amazon-ecs-service-status.json"
+                            def ecsServicesStatusAsJson = readFile(".amazon-ecs-service-status.json")
+                            def ecsServicesStatus = new groovy.json.JsonSlurper().parseText(ecsServicesStatusAsJson)
+                            println "$ecsServicesStatus"
+                            def ecsServiceStatus = ecsServicesStatus.services[0]
+                            return ecsServiceStatus.get('runningCount') == 0 && ecsServiceStatus.get('status') == "ACTIVE"
+                        }
+                    }
+                }
+            }
+        }    
     } 
     catch (Exception err) 
     {
