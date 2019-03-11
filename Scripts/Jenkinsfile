@@ -2,7 +2,8 @@ node('.net')
 {
     try 
     {
-        def image
+        def latestImage
+        def snapshootImage
         stage ('Checkout source code') 
         {
             echo("Code checkout...")           
@@ -31,16 +32,16 @@ node('.net')
 			echo("Building docker image...")
             dir("CoreWebApi")
             {
-				//image = docker.build("corewebapi:DEV-${env.BUILD_NUMBER}")
-                image = docker.build("corewebapi")
+				snapshootImage = docker.build("corewebapi:DEV-${env.BUILD_NUMBER}")
+                latestImage = docker.build("corewebapi")
 			}
 		}
         stage('Push docker image') {
             echo "Push docker image to ECR repository"
             docker.withRegistry('https://524548625119.dkr.ecr.eu-west-3.amazonaws.com/corewebapi', 'ecr:eu-west-3:aws-access-credentials') 
             {
-                //image.push("DEV-${env.BUILD_NUMBER}")
-                image.push("latest")
+                snapshootImage.push("DEV-${env.BUILD_NUMBER}")
+                latestImage.push("latest")
             }
         }
         stage('Deploy to ECS') 
