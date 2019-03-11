@@ -37,7 +37,7 @@ node('.net')
 		}
         stage('Push docker image ') {
             echo "Push docker image to ECR repository"
-            docker.withRegistry('https://524548625119.dkr.ecr.eu-west-3.amazonaws.com/corewebapi', 'ecr:eu-west-3:aws-access-credentials') 
+            docker.withRegistry('https://524548625119.dkr.ecr.eu-west-3.amazonaws.com/corewebapi', 'aws-access-credentials') 
             {
                 image.push("DEV-${env.BUILD_NUMBER}")
             }
