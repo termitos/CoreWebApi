@@ -16,15 +16,14 @@ node('.net')
         stage('Build source code') 
         {
             echo("Compiling the solution...")
-            sh("dotnet build --configuration Release --version-suffix DEV-${env.BUILD_NUMBER}")
+            sh("dotnet build --version-suffix DEV-${env.BUILD_NUMBER}")
         }
         stage('Publish package') 
         {
             echo("Creating pulbish directory...")
             dir("CoreWebApi")
             {
-                sh("dotnet build --configuration Release --version-suffix DEV-${env.BUILD_NUMBER}")
-                sh("dotnet publish --no-restore --no-build --configuration Release --output publish")
+                sh("dotnet publish --no-restore --no-build --output publish")
             }
         }
 		stage('Build docker image')
