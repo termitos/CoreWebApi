@@ -2,14 +2,15 @@ node('.net')
 {
     try 
     {
+        def image
         stage ('Checkout') 
         {
-            echo("Checkout...")           
+            echo("Code checkout...")           
             git(branch: "develop", credentialsId: "74517f2b-b853-4bb3-bf6a-b8229150b394", url: "https://github.com/termitos/CoreWebApi.git")
         } 
         stage('Restore') 
         {
-            echo("Restoring NuGet dependencies...")
+            echo("Restoring dependencies...")
             sh("dotnet restore")
         }
         stage('Build') 
@@ -25,7 +26,24 @@ node('.net')
                 sh("dotnet build --configuration Release --version-suffix DEV-${env.BUILD_NUMBER}")
                 sh("dotnet publish --no-restore --no-build --configuration Release --output publish")
             }
-        }        
+        }
+		stage('Build docker image')
+		{
+			echo("Building docker image...")
+            dir("CoreWebApi")
+            {
+				image = docker.build("CoreWebApi:DEV-${env.BUILD_NUMBER}")
+                image.inside {
+                    sh 'dotnet --version'
+                }
+			}
+		}
+        stage('Push docker image ') {
+            echo "Push docker image to ECR repository"
+            docker.withRegistry('524548625119.dkr.ecr.eu-west-3.amazonaws.com/corewebapi') {
+                image.push('latest')
+            }
+        }
     } 
     catch (Exception err) 
     {
