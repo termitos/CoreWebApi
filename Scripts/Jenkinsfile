@@ -32,7 +32,7 @@ node('.net')
 			echo("Building docker image...")
             dir("CoreWebApi")
             {
-				image = docker.build("CoreWebApi:DEV-${env.BUILD_NUMBER}")
+				image = docker.build("corewebapi:DEV-${env.BUILD_NUMBER}")
                 image.inside {
                     sh 'dotnet --version'
                 }
