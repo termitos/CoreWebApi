@@ -3,22 +3,22 @@ node('.net')
     try 
     {
         def image
-        stage ('Checkout') 
+        stage ('Checkout source code') 
         {
             echo("Code checkout...")           
             git(branch: "develop", credentialsId: "74517f2b-b853-4bb3-bf6a-b8229150b394", url: "https://github.com/termitos/CoreWebApi.git")
         } 
-        stage('Restore') 
+        stage('Restore dependencies') 
         {
             echo("Restoring dependencies...")
             sh("dotnet restore")
         }
-        stage('Build') 
+        stage('Build source code') 
         {
             echo("Compiling the solution...")
             sh("dotnet build --configuration Release --version-suffix DEV-${env.BUILD_NUMBER}")
         }
-        stage('Publish') 
+        stage('Publish package') 
         {
             echo("Creating pulbish directory...")
             dir("CoreWebApi")
@@ -37,7 +37,7 @@ node('.net')
 		}
         stage('Push docker image ') {
             echo "Push docker image to ECR repository"
-            docker.withRegistry('524548625119.dkr.ecr.eu-west-3.amazonaws.com/corewebapi') 
+            docker.withRegistry('https://524548625119.dkr.ecr.eu-west-3.amazonaws.com/corewebapi', '25c33cbc-a032-4ba9-bcd7-8f2e1234fd96') 
             {
                 image.push("DEV-${env.BUILD_NUMBER}")
             }
