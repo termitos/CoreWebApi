@@ -45,41 +45,34 @@ node('.net')
         }
         stage('Deploy to ECS') 
         {
-            echo "Deploy to ECS"        
-            def buildenv = docker.image('cloudbees/java-build-tools:0.0.7.1')
-            buildenv.inside 
+            echo "Deploy latest image to ECS cluster"
+            sh("aws ecs update-service --service corewebapi-service --cluster ecs-default-cluster --desired-count 0")
+            timeout(time: 5, unit: 'MINUTES') 
             {
-                wrap([$class: 'AmazonAwsCliBuildWrapper', credentialsId: 'aws-access-credentials', defaultRegion: 'eu-west-3']) 
+                waitUntil 
                 {
-                    sh "aws ecs update-service --service corewebapi  --cluster ecs-default-cluster --desired-count 0"
-                    timeout(time: 5, unit: 'MINUTES') 
-                    {
-                        waitUntil 
-                        {
-                            sh "aws ecs describe-services --services corewebapi  --cluster ecs-default-cluster  > .amazon-ecs-service-status.json"
-                            def ecsServicesStatusAsJson = readFile(".amazon-ecs-service-status.json")
-                            def ecsServicesStatus = new groovy.json.JsonSlurper().parseText(ecsServicesStatusAsJson)
-                            println "$ecsServicesStatus"
-                            def ecsServiceStatus = ecsServicesStatus.services[0]
-                            return ecsServiceStatus.get('runningCount') == 0 && ecsServiceStatus.get('status') == "ACTIVE"
-                        }
-                    }
-                    sh "aws ecs update-service --service corewebapi --cluster ecs-default-cluster --desired-count 1"
-                    timeout(time: 5, unit: 'MINUTES') 
-                    {
-                        waitUntil 
-                        {
-                            sh "aws ecs describe-services --services corewebapi --cluster ecs-default-cluster > .amazon-ecs-service-status.json"
-                            def ecsServicesStatusAsJson = readFile(".amazon-ecs-service-status.json")
-                            def ecsServicesStatus = new groovy.json.JsonSlurper().parseText(ecsServicesStatusAsJson)
-                            println "$ecsServicesStatus"
-                            def ecsServiceStatus = ecsServicesStatus.services[0]
-                            return ecsServiceStatus.get('runningCount') == 0 && ecsServiceStatus.get('status') == "ACTIVE"
-                        }
-                    }
+                    sh("aws ecs describe-services --services corewebapi-service --cluster ecs-default-cluster  > .amazon-ecs-service-status.json")
+                    def ecsServicesStatusAsJson = readFile(".amazon-ecs-service-status.json")
+                    def ecsServicesStatus = new groovy.json.JsonSlurper().parseText(ecsServicesStatusAsJson)
+                    println "$ecsServicesStatus"
+                    def ecsServiceStatus = ecsServicesStatus.services[0]
+                    return ecsServiceStatus.get('runningCount') == 0 && ecsServiceStatus.get('status') == "ACTIVE"
                 }
             }
-        }    
+            sh("aws ecs update-service --service corewebapi-service --cluster ecs-default-cluster --desired-count 1")
+            timeout(time: 5, unit: 'MINUTES') 
+            {
+                waitUntil 
+                {
+                    sh("aws ecs describe-services --services corewebapi-service --cluster ecs-default-cluster > .amazon-ecs-service-status.json")
+                    def ecsServicesStatusAsJson = readFile(".amazon-ecs-service-status.json")
+                    def ecsServicesStatus = new groovy.json.JsonSlurper().parseText(ecsServicesStatusAsJson)
+                    println "$ecsServicesStatus"
+                    def ecsServiceStatus = ecsServicesStatus.services[0]
+                    return ecsServiceStatus.get('runningCount') == 0 && ecsServiceStatus.get('status') == "ACTIVE"
+                }
+            }
+        }        
     } 
     catch (Exception err) 
     {
