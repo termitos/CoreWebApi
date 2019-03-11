@@ -10,20 +10,20 @@ node('.net')
         stage('Restore') 
         {
             echo("Restoring NuGet dependencies...")
-            bat("dotnet restore")
+            sh("dotnet restore")
         }
         stage('Build') 
         {
             echo("Compiling the solution...")
-            bat("dotnet build --configuration Release --version-suffix DEV-${env.BUILD_NUMBER}")
+            sh("dotnet build --configuration Release --version-suffix DEV-${env.BUILD_NUMBER}")
         }
         stage('Publish') 
         {
             echo("Creating pulbish directory...")
             dir("CoreWebApi")
             {
-                bat("dotnet build --configuration Release --version-suffix DEV-${env.BUILD_NUMBER}")
-                bat("dotnet publish --no-restore --no-build --configuration Release --output publish")
+                sh("dotnet build --configuration Release --version-suffix DEV-${env.BUILD_NUMBER}")
+                sh("dotnet publish --no-restore --no-build --configuration Release --output publish")
             }
         }        
     } 
