@@ -46,12 +46,12 @@ node('.net')
         stage('Deploy to ECS') 
         {
             echo "Deploy latest image to ECS cluster"
-            sh("aws ecs update-service --service corewebapi-service --cluster ecs-default-cluster --desired-count 0")
+            sh("aws ecs update-service --service corewebapi-service --cluster ecs-default-cluster --desired-count 0 --region eu-west-3")
             timeout(time: 5, unit: 'MINUTES') 
             {
                 waitUntil 
                 {
-                    sh("aws ecs describe-services --services corewebapi-service --cluster ecs-default-cluster  > .amazon-ecs-service-status.json")
+                    sh("aws ecs describe-services --services corewebapi-service --cluster ecs-default-cluster --region eu-west-3 > .amazon-ecs-service-status.json")
                     def ecsServicesStatusAsJson = readFile(".amazon-ecs-service-status.json")
                     def ecsServicesStatus = new groovy.json.JsonSlurper().parseText(ecsServicesStatusAsJson)
                     println "$ecsServicesStatus"
@@ -59,12 +59,12 @@ node('.net')
                     return ecsServiceStatus.get('runningCount') == 0 && ecsServiceStatus.get('status') == "ACTIVE"
                 }
             }
-            sh("aws ecs update-service --service corewebapi-service --cluster ecs-default-cluster --desired-count 1")
+            sh("aws ecs update-service --service corewebapi-service --cluster ecs-default-cluster --desired-count 1 --region eu-west-3")
             timeout(time: 5, unit: 'MINUTES') 
             {
                 waitUntil 
                 {
-                    sh("aws ecs describe-services --services corewebapi-service --cluster ecs-default-cluster > .amazon-ecs-service-status.json")
+                    sh("aws ecs describe-services --services corewebapi-service --cluster ecs-default-cluster --region eu-west-3 > .amazon-ecs-service-status.json")
                     def ecsServicesStatusAsJson = readFile(".amazon-ecs-service-status.json")
                     def ecsServicesStatus = new groovy.json.JsonSlurper().parseText(ecsServicesStatusAsJson)
                     println "$ecsServicesStatus"
