@@ -1,0 +1,58 @@
+node('.net')
+{
+    try 
+    {
+        stage ('Checkout') 
+        {
+            echo("Checkout...")           
+            git(branch: "develop", credentialsId: "74517f2b-b853-4bb3-bf6a-b8229150b394", url: "https://github.com/termitos/CoreWebApi.git")
+        } 
+        stage('Restore') 
+        {
+            echo("Restoring NuGet dependencies...")
+            bat("dotnet restore")
+        }
+        stage('Build') 
+        {
+            echo("Compiling the solution...")
+            bat("dotnet build --configuration Release --version-suffix DEV-${env.BUILD_NUMBER}")
+        }
+        stage('Publish') 
+        {
+            echo("Creating pulbish directory...")
+            dir("CoreWebApi")
+            {
+                bat("dotnet build --configuration Release --version-suffix DEV-${env.BUILD_NUMBER}")
+                bat("dotnet publish --no-restore --no-build --configuration Release --output publish")
+            }
+        }        
+    } 
+    catch (Exception err) 
+    {
+        currentBuild.result = 'FAILURE'
+        echo("Error message: $err.message")
+        notifyFailure()
+    }
+    finally
+    {
+        cleanWs(cleanWhenAborted: false, cleanWhenFailure: false)        
+    }
+}
+
+def notifySuccessful()
+{    
+    emailext (
+        subject: "SUCCESSFUL: Job ${env.JOB_NAME} [${env.BUILD_NUMBER}]",
+        body: "SUCCESSFUL: Job ${env.JOB_NAME} [${env.BUILD_NUMBER}]: Check console output at ${env.BUILD_URL}",
+        recipientProviders: [developers()]
+    )
+}
+
+def notifyFailure() 
+{
+    emailext (
+        subject: "FAILED: Job ${env.JOB_NAME} [${env.BUILD_NUMBER}]",
+        body: "FAILED: Job ${env.JOB_NAME} [${env.BUILD_NUMBER}]: Check console output at ${env.BUILD_URL}",
+        recipientProviders: [developers()]
+    )
+}
