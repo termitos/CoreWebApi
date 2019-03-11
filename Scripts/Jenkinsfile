@@ -2,28 +2,76 @@ node('.net')
 {
     try 
     {
-        stage ('Checkout') 
+        def latestImage
+        def snapshootImage
+        stage ('Checkout source code') 
         {
-            echo("Checkout...")           
+            echo("Code checkout...")           
             git(branch: "develop", credentialsId: "74517f2b-b853-4bb3-bf6a-b8229150b394", url: "https://github.com/termitos/CoreWebApi.git")
         } 
-        stage('Restore') 
+        stage('Restore dependencies') 
         {
-            echo("Restoring NuGet dependencies...")
-            bat("dotnet restore")
+            echo("Restoring dependencies...")
+            sh("dotnet restore")
         }
-        stage('Build') 
+        stage('Build source code') 
         {
             echo("Compiling the solution...")
-            bat("dotnet build --configuration Release --version-suffix DEV-${env.BUILD_NUMBER}")
+            sh("dotnet build --version-suffix DEV-${env.BUILD_NUMBER}")
         }
-        stage('Publish') 
+        stage('Publish package') 
         {
             echo("Creating pulbish directory...")
             dir("CoreWebApi")
             {
-                bat("dotnet build --configuration Release --version-suffix DEV-${env.BUILD_NUMBER}")
-                bat("dotnet publish --no-restore --no-build --configuration Release --output publish")
+                sh("dotnet publish --no-restore --no-build --output publish")
+            }
+        }
+		stage('Build docker image')
+		{
+			echo("Building docker image...")
+            dir("CoreWebApi")
+            {
+				snapshootImage = docker.build("corewebapi:DEV-${env.BUILD_NUMBER}")
+                latestImage = docker.build("corewebapi")
+			}
+		}
+        stage('Push docker image') {
+            echo "Push docker image to ECR repository"
+            docker.withRegistry('https://524548625119.dkr.ecr.eu-west-3.amazonaws.com/corewebapi', 'ecr:eu-west-3:aws-access-credentials') 
+            {
+                snapshootImage.push("DEV-${env.BUILD_NUMBER}")
+                latestImage.push("latest")
+            }
+        }
+        stage('Deploy to ECS') 
+        {
+            echo "Deploy latest image to ECS cluster"
+            sh("aws ecs update-service --service corewebapi-service --cluster ecs-default-cluster --desired-count 0 --region eu-west-3")
+            timeout(time: 5, unit: 'MINUTES') 
+            {
+                waitUntil 
+                {
+                    sh("aws ecs describe-services --services corewebapi-service --cluster ecs-default-cluster --region eu-west-3 > .amazon-ecs-service-status.json")
+                    def ecsServicesStatusAsJson = readFile(".amazon-ecs-service-status.json")
+                    def ecsServicesStatus = new groovy.json.JsonSlurper().parseText(ecsServicesStatusAsJson)
+                    println "$ecsServicesStatus"
+                    def ecsServiceStatus = ecsServicesStatus.services[0]
+                    return ecsServiceStatus.get('runningCount') == 0 && ecsServiceStatus.get('status') == "ACTIVE"
+                }
+            }
+            sh("aws ecs update-service --service corewebapi-service --cluster ecs-default-cluster --desired-count 1 --region eu-west-3")
+            timeout(time: 5, unit: 'MINUTES') 
+            {
+                waitUntil 
+                {
+                    sh("aws ecs describe-services --services corewebapi-service --cluster ecs-default-cluster --region eu-west-3 > .amazon-ecs-service-status.json")
+                    def ecsServicesStatusAsJson = readFile(".amazon-ecs-service-status.json")
+                    def ecsServicesStatus = new groovy.json.JsonSlurper().parseText(ecsServicesStatusAsJson)
+                    println "$ecsServicesStatus"
+                    def ecsServiceStatus = ecsServicesStatus.services[0]
+                    return ecsServiceStatus.get('runningCount') == 0 && ecsServiceStatus.get('status') == "ACTIVE"
+                }
             }
         }        
     } 
