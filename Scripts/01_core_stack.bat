@@ -1,0 +1,1 @@
+aws cloudformation create-stack --stack-name corewebapi-stack --capabilities CAPABILITY_NAMED_IAM --template-body file://../Infrastructure/core-stack.json

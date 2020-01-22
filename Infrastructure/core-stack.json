@@ -1,0 +1,974 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "This stack deploys the core network infrastructure and IAM resources to be used for a service hosted in Amazon ECS using AWS Fargate.",
+    "Mappings": {
+        "SubnetConfig": {
+            "VPC": {
+                "CIDR": "10.0.0.0/16"
+            },
+            "PublicOne": {
+                "CIDR": "10.0.0.0/24"
+            },
+            "PublicTwo": {
+                "CIDR": "10.0.1.0/24"
+            },
+            "PrivateOne": {
+                "CIDR": "10.0.2.0/24"
+            },
+            "PrivateTwo": {
+                "CIDR": "10.0.3.0/24"
+            }
+        },
+        "PrefixListId": {
+            "us-east-1": {
+                "s3": "pl-63a5400a"
+            },
+            "us-east-2": {
+                "s3": "pl-7ba54012"
+            },
+            "us-west-1": {
+                "s3": "pl-6ba54002"
+            },
+            "us-west-2": {
+                "s3": "pl-68a54001"
+            },
+            "eu-west-1": {
+                "s3": "pl-6da54004"
+            },
+            "eu-central-1": {
+                "s3": "pl-6ea54007"
+            },
+            "ap-northeast-1": {
+                "s3": "pl-61a54008"
+            },
+            "ap-northeast-2": {
+                "s3": "pl-78a54011"
+            },
+            "ap-southeast-1": {
+                "s3": "pl-6fa54006"
+            },
+            "ap-southeast-2": {
+                "s3": "pl-6ca54005"
+            },
+            "ap-south-1": {
+                "s3": "pl-78a54011"
+            },
+            "sa-east-1": {
+                "s3": "pl-6aa54003"
+            }
+        }
+    },
+    "Resources": {
+        "VPC": {
+            "Type": "AWS::EC2::VPC",
+            "Properties": {
+                "EnableDnsSupport": true,
+                "EnableDnsHostnames": true,
+                "CidrBlock": {
+                    "Fn::FindInMap": [
+                        "SubnetConfig",
+                        "VPC",
+                        "CIDR"
+                    ]
+                }
+            }
+        },
+        "PublicSubnetOne": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "AvailabilityZone": {
+                    "Fn::Select": [
+                        0,
+                        {
+                            "Fn::GetAZs": {
+                                "Ref": "AWS::Region"
+                            }
+                        }
+                    ]
+                },
+                "VpcId": {
+                    "Ref": "VPC"
+                },
+                "CidrBlock": {
+                    "Fn::FindInMap": [
+                        "SubnetConfig",
+                        "PublicOne",
+                        "CIDR"
+                    ]
+                },
+                "MapPublicIpOnLaunch": true
+            }
+        },
+        "PublicSubnetTwo": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "AvailabilityZone": {
+                    "Fn::Select": [
+                        1,
+                        {
+                            "Fn::GetAZs": {
+                                "Ref": "AWS::Region"
+                            }
+                        }
+                    ]
+                },
+                "VpcId": {
+                    "Ref": "VPC"
+                },
+                "CidrBlock": {
+                    "Fn::FindInMap": [
+                        "SubnetConfig",
+                        "PublicTwo",
+                        "CIDR"
+                    ]
+                },
+                "MapPublicIpOnLaunch": true
+            }
+        },
+        "PrivateSubnetOne": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "AvailabilityZone": {
+                    "Fn::Select": [
+                        0,
+                        {
+                            "Fn::GetAZs": {
+                                "Ref": "AWS::Region"
+                            }
+                        }
+                    ]
+                },
+                "VpcId": {
+                    "Ref": "VPC"
+                },
+                "CidrBlock": {
+                    "Fn::FindInMap": [
+                        "SubnetConfig",
+                        "PrivateOne",
+                        "CIDR"
+                    ]
+                }
+            }
+        },
+        "PrivateSubnetTwo": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "AvailabilityZone": {
+                    "Fn::Select": [
+                        1,
+                        {
+                            "Fn::GetAZs": {
+                                "Ref": "AWS::Region"
+                            }
+                        }
+                    ]
+                },
+                "VpcId": {
+                    "Ref": "VPC"
+                },
+                "CidrBlock": {
+                    "Fn::FindInMap": [
+                        "SubnetConfig",
+                        "PrivateTwo",
+                        "CIDR"
+                    ]
+                }
+            }
+        },
+        "InternetGateway": {
+            "Type": "AWS::EC2::InternetGateway"
+        },
+        "GatewayAttachement": {
+            "Type": "AWS::EC2::VPCGatewayAttachment",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "VPC"
+                },
+                "InternetGatewayId": {
+                    "Ref": "InternetGateway"
+                }
+            }
+        },
+        "PublicRouteTable": {
+            "Type": "AWS::EC2::RouteTable",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "VPC"
+                }
+            }
+        },
+        "PublicRoute": {
+            "Type": "AWS::EC2::Route",
+            "DependsOn": "GatewayAttachement",
+            "Properties": {
+                "RouteTableId": {
+                    "Ref": "PublicRouteTable"
+                },
+                "DestinationCidrBlock": "0.0.0.0/0",
+                "GatewayId": {
+                    "Ref": "InternetGateway"
+                }
+            }
+        },
+        "PublicSubnetOneRouteTableAssociation": {
+            "Type": "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties": {
+                "SubnetId": {
+                    "Ref": "PublicSubnetOne"
+                },
+                "RouteTableId": {
+                    "Ref": "PublicRouteTable"
+                }
+            }
+        },
+        "PublicSubnetTwoRouteTableAssociation": {
+            "Type": "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties": {
+                "SubnetId": {
+                    "Ref": "PublicSubnetTwo"
+                },
+                "RouteTableId": {
+                    "Ref": "PublicRouteTable"
+                }
+            }
+        },
+        "PrivateRouteTableOne": {
+            "Type": "AWS::EC2::RouteTable",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "VPC"
+                }
+            }
+        },
+        "PrivateRouteTableOneAssociation": {
+            "Type": "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties": {
+                "RouteTableId": {
+                    "Ref": "PrivateRouteTableOne"
+                },
+                "SubnetId": {
+                    "Ref": "PrivateSubnetOne"
+                }
+            }
+        },
+        "PrivateRouteTableTwo": {
+            "Type": "AWS::EC2::RouteTable",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "VPC"
+                }
+            }
+        },
+        "PrivateRouteTableTwoAssociation": {
+            "Type": "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties": {
+                "RouteTableId": {
+                    "Ref": "PrivateRouteTableTwo"
+                },
+                "SubnetId": {
+                    "Ref": "PrivateSubnetTwo"
+                }
+            }
+        },
+        "DynamoDBEndpoint": {
+            "Type": "AWS::EC2::VPCEndpoint",
+            "Properties": {
+                "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Action": "*",
+                            "Principal": "*",
+                            "Resource": "*"
+                        }
+                    ]
+                },
+                "RouteTableIds": [
+                    {
+                        "Ref": "PrivateRouteTableOne"
+                    },
+                    {
+                        "Ref": "PrivateRouteTableTwo"
+                    }
+                ],
+                "ServiceName": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "com.amazonaws.",
+                            {
+                                "Ref": "AWS::Region"
+                            },
+                            ".dynamodb"
+                        ]
+                    ]
+                },
+                "VpcId": {
+                    "Ref": "VPC"
+                }
+            }
+        },
+        "EcrEndpointOne": {
+            "Type": "AWS::EC2::VPCEndpoint",
+            "Properties": {
+                "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Action": "*",
+                            "Principal": "*",
+                            "Resource": "*"
+                        }
+                    ]
+                },
+                "SubnetIds": [
+                    {
+                        "Ref": "PrivateSubnetOne"
+                    },
+                    {
+                        "Ref": "PrivateSubnetTwo"
+                    }
+                ],
+                "SecurityGroupIds": [
+                    {
+                        "Ref": "FargateContainerSecurityGroup"
+                    }
+                ],
+                "ServiceName": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "com.amazonaws.",
+                            {
+                                "Ref": "AWS::Region"
+                            },
+                            ".ecr.dkr"
+                        ]
+                    ]
+                },
+                "VpcEndpointType": "Interface",
+                "PrivateDnsEnabled": true,
+                "VpcId": {
+                    "Ref": "VPC"
+                }
+            }
+        },
+        "EcrEndpointTwo": {
+            "Type": "AWS::EC2::VPCEndpoint",
+            "Properties": {
+                "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Action": "*",
+                            "Principal": "*",
+                            "Resource": "*"
+                        }
+                    ]
+                },
+                "SubnetIds": [
+                    {
+                        "Ref": "PrivateSubnetOne"
+                    },
+                    {
+                        "Ref": "PrivateSubnetTwo"
+                    }
+                ],
+                "SecurityGroupIds": [
+                    {
+                        "Ref": "FargateContainerSecurityGroup"
+                    }
+                ],
+                "ServiceName": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "com.amazonaws.",
+                            {
+                                "Ref": "AWS::Region"
+                            },
+                            ".ecr.api"
+                        ]
+                    ]
+                },
+                "VpcEndpointType": "Interface",
+                "PrivateDnsEnabled": true,
+                "VpcId": {
+                    "Ref": "VPC"
+                }
+            }
+        },
+        "S3Endpoint": {
+            "Type": "AWS::EC2::VPCEndpoint",
+            "Properties": {
+                "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Action": "*",
+                            "Principal": "*",
+                            "Resource": "*"
+                        }
+                    ]
+                },
+                "RouteTableIds": [
+                    {
+                        "Ref": "PrivateRouteTableOne"
+                    },
+                    {
+                        "Ref": "PrivateRouteTableTwo"
+                    }
+                ],
+                "ServiceName": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "com.amazonaws.",
+                            {
+                                "Ref": "AWS::Region"
+                            },
+                            ".s3"
+                        ]
+                    ]
+                },
+                "VpcId": {
+                    "Ref": "VPC"
+                }
+            }
+        },
+        "FargateContainerSecurityGroup": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupDescription": "Access to the fargate containers from the Internet",
+                "VpcId": {
+                    "Ref": "VPC"
+                },
+                "SecurityGroupIngress": [
+                    {
+                        "CidrIp": {
+                            "Fn::FindInMap": [
+                                "SubnetConfig",
+                                "VPC",
+                                "CIDR"
+                            ]
+                        },
+                        "IpProtocol": -1
+                    }
+                ],
+                "SecurityGroupEgress": {
+                    "IpProtocol": -1,
+                    "FromPort": 443,
+                    "ToPort": 443,
+                    "DestinationPrefixListId": {
+                        "Fn::FindInMap": [
+                            "PrefixListId",
+                            {
+                                "Ref": "AWS::Region"
+                            },
+                            "s3"
+                        ]
+                    }
+                }
+            }
+        },
+        "EcsServiceRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": [
+                                    "ecs.amazonaws.com",
+                                    "ecs-tasks.amazonaws.com"
+                                ]
+                            },
+                            "Action": [
+                                "sts:AssumeRole"
+                            ]
+                        }
+                    ]
+                },
+                "Path": "/",
+                "Policies": [
+                    {
+                        "PolicyName": "ecs-service",
+                        "PolicyDocument": {
+                            "Statement": [
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "ec2:AttachNetworkInterface",
+                                        "ec2:CreateNetworkInterface",
+                                        "ec2:CreateNetworkInterfacePermission",
+                                        "ec2:DeleteNetworkInterface",
+                                        "ec2:DeleteNetworkInterfacePermission",
+                                        "ec2:Describe*",
+                                        "ec2:DetachNetworkInterface",
+                                        "elasticloadbalancing:DeregisterInstancesFromLoadBalancer",
+                                        "elasticloadbalancing:DeregisterTargets",
+                                        "elasticloadbalancing:Describe*",
+                                        "elasticloadbalancing:RegisterInstancesWithLoadBalancer",
+                                        "elasticloadbalancing:RegisterTargets",
+                                        "iam:PassRole",
+                                        "ecr:GetAuthorizationToken",
+                                        "ecr:BatchCheckLayerAvailability",
+                                        "ecr:GetDownloadUrlForLayer",
+                                        "ecr:BatchGetImage",
+                                        "logs:DescribeLogStreams",
+                                        "logs:CreateLogStream",
+                                        "logs:CreateLogGroup",
+                                        "logs:PutLogEvents"
+                                    ],
+                                    "Resource": "*"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        "ECSTaskRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": [
+                                    "ecs-tasks.amazonaws.com"
+                                ]
+                            },
+                            "Action": [
+                                "sts:AssumeRole"
+                            ]
+                        }
+                    ]
+                },
+                "Path": "/",
+                "Policies": [
+                    {
+                        "PolicyName": "AmazonECSTaskRolePolicy",
+                        "PolicyDocument": {
+                            "Statement": [
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "ecr:GetAuthorizationToken",
+                                        "ecr:BatchCheckLayerAvailability",
+                                        "ecr:GetDownloadUrlForLayer",
+                                        "ecr:BatchGetImage",
+                                        "logs:CreateLogStream",
+                                        "logs:CreateLogGroup",
+                                        "logs:PutLogEvents"
+                                    ],
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "dynamodb:Scan",
+                                        "dynamodb:Query",
+                                        "dynamodb:UpdateItem",
+                                        "dynamodb:GetItem",
+                                        "dynamodb:DescribeTable"
+                                    ],
+                                    "Resource": "arn:aws:dynamodb:*:*:table/corewebapitable*"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        "CoreWebApiServiceCodePipelineServiceRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "RoleName": "CoreWebApiServiceCodePipelineServiceRole",
+                "AssumeRolePolicyDocument": {
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": [
+                                    "codepipeline.amazonaws.com"
+                                ]
+                            },
+                            "Action": [
+                                "sts:AssumeRole"
+                            ]
+                        }
+                    ]
+                },
+                "Path": "/",
+                "Policies": [
+                    {
+                        "PolicyName": "CoreWebApiService-codepipeline-service-policy",
+                        "PolicyDocument": {
+                            "Statement": [
+                                {
+                                    "Action": [
+                                        "codecommit:GetBranch",
+                                        "codecommit:GetCommit",
+                                        "codecommit:UploadArchive",
+                                        "codecommit:GetUploadArchiveStatus",
+                                        "codecommit:CancelUploadArchive"
+                                    ],
+                                    "Resource": "*",
+                                    "Effect": "Allow"
+                                },
+                                {
+                                    "Action": [
+                                        "s3:GetObject",
+                                        "s3:GetObjectVersion",
+                                        "s3:GetBucketVersioning"
+                                    ],
+                                    "Resource": "*",
+                                    "Effect": "Allow"
+                                },
+                                {
+                                    "Action": [
+                                        "s3:PutObject"
+                                    ],
+                                    "Resource": [
+                                        "arn:aws:s3:::*"
+                                    ],
+                                    "Effect": "Allow"
+                                },
+                                {
+                                    "Action": [
+                                        "elasticloadbalancing:*",
+                                        "autoscaling:*",
+                                        "cloudwatch:*",
+                                        "ecs:*",
+                                        "codebuild:*",
+                                        "iam:PassRole"
+                                    ],
+                                    "Resource": "*",
+                                    "Effect": "Allow"
+                                }
+                            ],
+                            "Version": "2012-10-17"
+                        }
+                    }
+                ]
+            }
+        },
+        "CoreWebApiServiceCodeBuildServiceRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "RoleName": "CoreWebApiServiceCodeBuildServiceRole",
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": {
+                        "Effect": "Allow",
+                        "Principal": {
+                            "Service": "codebuild.amazonaws.com"
+                        },
+                        "Action": "sts:AssumeRole"
+                    }
+                },
+                "Policies": [
+                    {
+                        "PolicyName": "CoreWebApiService-CodeBuildServicePolicy",
+                        "PolicyDocument": {
+                            "Version": "2012-10-17",
+                            "Statement": [
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "codecommit:ListBranches",
+                                        "codecommit:ListRepositories",
+                                        "codecommit:BatchGetRepositories",
+                                        "codecommit:Get*",
+                                        "codecommit:GitPull"
+                                    ],
+                                    "Resource": [
+                                        {
+                                            "Fn::Sub": "arn:aws:codecommit:${AWS::Region}:${AWS::AccountId}:CoreWebApiServiceRepository"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "logs:CreateLogGroup",
+                                        "logs:CreateLogStream",
+                                        "logs:PutLogEvents"
+                                    ],
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "s3:PutObject",
+                                        "s3:GetObject",
+                                        "s3:GetObjectVersion",
+                                        "s3:ListBucket"
+                                    ],
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "ecr:InitiateLayerUpload",
+                                        "ecr:GetAuthorizationToken"
+                                    ],
+                                    "Resource": "*"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    "Outputs": {
+        "CurrentRegion": {
+            "Description": "The string representation of the region being used.",
+            "Value": {
+                "Ref": "AWS::Region"
+            },
+            "Export": {
+                "Name": {
+                    "Fn::Join": [
+                        ":",
+                        [
+                            {
+                                "Ref": "AWS::StackName"
+                            },
+                            "CurrentRegion"
+                        ]
+                    ]
+                }
+            }
+        },
+        "CurrentAccount": {
+            "Description": "The ID of the Account being used.",
+            "Value": {
+                "Ref": "AWS::AccountId"
+            },
+            "Export": {
+                "Name": {
+                    "Fn::Join": [
+                        ":",
+                        [
+                            {
+                                "Ref": "AWS::StackName"
+                            },
+                            "CurrentAccount"
+                        ]
+                    ]
+                }
+            }
+        },
+        "EcsServiceRole": {
+            "Description": "The ARN of the ECS Service role",
+            "Value": {
+                "Fn::GetAtt": [
+                    "EcsServiceRole",
+                    "Arn"
+                ]
+            },
+            "Export": {
+                "Name": {
+                    "Fn::Join": [
+                        ":",
+                        [
+                            {
+                                "Ref": "AWS::StackName"
+                            },
+                            "EcsServiceRole"
+                        ]
+                    ]
+                }
+            }
+        },
+        "ECSTaskRole": {
+            "Description": "The ARN of the ECS Task role",
+            "Value": {
+                "Fn::GetAtt": [
+                    "ECSTaskRole",
+                    "Arn"
+                ]
+            },
+            "Export": {
+                "Name": {
+                    "Fn::Join": [
+                        ":",
+                        [
+                            {
+                                "Ref": "AWS::StackName"
+                            },
+                            "ECSTaskRole"
+                        ]
+                    ]
+                }
+            }
+        },
+        "VPCId": {
+            "Description": "The ID of the VPC that this stack is deployed in",
+            "Value": {
+                "Ref": "VPC"
+            },
+            "Export": {
+                "Name": {
+                    "Fn::Join": [
+                        ":",
+                        [
+                            {
+                                "Ref": "AWS::StackName"
+                            },
+                            "VPCId"
+                        ]
+                    ]
+                }
+            }
+        },
+        "PublicSubnetOne": {
+            "Description": "Public subnet one",
+            "Value": {
+                "Ref": "PublicSubnetOne"
+            },
+            "Export": {
+                "Name": {
+                    "Fn::Join": [
+                        ":",
+                        [
+                            {
+                                "Ref": "AWS::StackName"
+                            },
+                            "PublicSubnetOne"
+                        ]
+                    ]
+                }
+            }
+        },
+        "PublicSubnetTwo": {
+            "Description": "Public subnet two",
+            "Value": {
+                "Ref": "PublicSubnetTwo"
+            },
+            "Export": {
+                "Name": {
+                    "Fn::Join": [
+                        ":",
+                        [
+                            {
+                                "Ref": "AWS::StackName"
+                            },
+                            "PublicSubnetTwo"
+                        ]
+                    ]
+                }
+            }
+        },
+        "PrivateSubnetOne": {
+            "Description": "Private subnet one",
+            "Value": {
+                "Ref": "PrivateSubnetOne"
+            },
+            "Export": {
+                "Name": {
+                    "Fn::Join": [
+                        ":",
+                        [
+                            {
+                                "Ref": "AWS::StackName"
+                            },
+                            "PrivateSubnetOne"
+                        ]
+                    ]
+                }
+            }
+        },
+        "PrivateSubnetTwo": {
+            "Description": "Private subnet two",
+            "Value": {
+                "Ref": "PrivateSubnetTwo"
+            },
+            "Export": {
+                "Name": {
+                    "Fn::Join": [
+                        ":",
+                        [
+                            {
+                                "Ref": "AWS::StackName"
+                            },
+                            "PrivateSubnetTwo"
+                        ]
+                    ]
+                }
+            }
+        },
+        "FargateContainerSecurityGroup": {
+            "Description": "A security group used to allow Fargate containers to receive traffic",
+            "Value": {
+                "Ref": "FargateContainerSecurityGroup"
+            },
+            "Export": {
+                "Name": {
+                    "Fn::Join": [
+                        ":",
+                        [
+                            {
+                                "Ref": "AWS::StackName"
+                            },
+                            "FargateContainerSecurityGroup"
+                        ]
+                    ]
+                }
+            }
+        },
+        "CodeBuildRole": {
+            "Description": "The ARN of the CodeBuild role",
+            "Value": {
+                "Fn::GetAtt": [
+                    "CoreWebApiServiceCodeBuildServiceRole",
+                    "Arn"
+                ]
+            },
+            "Export": {
+                "Name": {
+                    "Fn::Join": [
+                        ":",
+                        [
+                            {
+                                "Ref": "AWS::StackName"
+                            },
+                            "CoreWebApiServiceCodeBuildServiceRole"
+                        ]
+                    ]
+                }
+            }
+        },
+        "CodePipelineRole": {
+            "Description": "The ARN of the CodePipeline role",
+            "Value": {
+                "Fn::GetAtt": [
+                    "CoreWebApiServiceCodePipelineServiceRole",
+                    "Arn"
+                ]
+            },
+            "Export": {
+                "Name": {
+                    "Fn::Join": [
+                        ":",
+                        [
+                            {
+                                "Ref": "AWS::StackName"
+                            },
+                            "CoreWebApiServiceCodePipelineServiceRole"
+                        ]
+                    ]
+                }
+            }
+        }
+    }
+}

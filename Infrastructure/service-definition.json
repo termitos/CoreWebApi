@@ -1,0 +1,30 @@
+{
+  "serviceName": "corewebapi-service",
+  "cluster": "corewebapi-cluster",
+  "launchType": "FARGATE",
+  "deploymentConfiguration": {
+    "maximumPercent": 200,
+    "minimumHealthyPercent": 0
+  },
+  "desiredCount": 1,
+  "networkConfiguration": {
+    "awsvpcConfiguration": {
+      "assignPublicIp": "DISABLED",
+      "securityGroups": [
+        "REPLACE_FargateContainerSecurityGroup"
+      ],
+      "subnets": [
+        "REPLACE_PrivateSubnetOne",
+        "REPLACE_PrivateSubnetTwo"
+      ]
+    }
+  },
+  "taskDefinition": "corewebapiservice",
+  "loadBalancers": [
+    {
+      "containerName": "corewebapi-service",
+      "containerPort": 8080,
+      "targetGroupArn": "REPLACE_TARGET_GROUP_ARN"
+    }
+  ]
+}

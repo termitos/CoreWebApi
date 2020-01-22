@@ -1,0 +1,32 @@
+{
+  "family": "corewebapiservice",
+  "cpu": "256",
+  "memory": "512",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": [
+    "FARGATE"
+  ],
+  "executionRoleArn": "REPLACE_SERVICE_ROLE_ARN",
+  "taskRoleArn": "REPLACE_TASK_ROLE_ARN",
+  "containerDefinitions": [
+    {
+      "name": "corewebapi-service",
+      "image": "524548625119.dkr.ecr.eu-central-1.amazonaws.com/corewebapi",
+      "portMappings": [
+        {
+          "containerPort": 8080,
+          "protocol": "http"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "corewebapi-logs",
+          "awslogs-region": "eu-central-1",
+          "awslogs-stream-prefix": "awslogs-corewebapi-service"
+        }
+      },
+      "essential": true
+    }
+  ]
+}

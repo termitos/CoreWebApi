@@ -1,6 +1,14 @@
-﻿################################################################################
+################################################################################
 # This .gitignore file was automatically created by Microsoft(R) Visual Studio.
 ################################################################################
 
 /CoreWebApi/obj
 /.vs/CoreWebApi/v15/Server/sqlite3
+CoreWebApi/CoreWebApi.csproj.user
+.vs/CoreWebApi/v15/.suo
+CoreWebApi/bin/Debug/
+.vs/
+CoreWebApi/logs/
+CoreWebApi/out/
+CoreWebApi/publish/
+Scripts/temp
