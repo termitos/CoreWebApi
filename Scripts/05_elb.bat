@@ -4,7 +4,7 @@ aws elbv2 describe-load-balancers --query LoadBalancers[].LoadBalancerArn[] --ou
 set /p elb_arn=<temp
 
 echo 'Target group'
-aws elbv2 create-target-group --name corewebapi-tg --port 8080 --protocol TCP --target-type ip --vpc-id vpc-0352eb5dcafe265e5 --health-check-interval-seconds 10 --health-check-path /api/version --health-check-protocol HTTP --healthy-threshold-count 3 --unhealthy-threshold-count 3
+aws elbv2 create-target-group --name corewebapi-tg --port 8080 --protocol TCP --target-type ip --vpc-id vpc-0352eb5dcafe265e5 --health-check-interval-seconds 10 --health-check-path /actuator/health --health-check-protocol HTTP --healthy-threshold-count 3 --unhealthy-threshold-count 3
 aws elbv2 describe-target-groups --query TargetGroups[].TargetGroupArn[] --output text --names corewebapi-tg >temp
 set /p tg_arn=<temp
 

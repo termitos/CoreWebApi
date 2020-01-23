@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.PlatformAbstractions;
-using Swashbuckle.AspNetCore.Swagger;
+using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerUI;
 
 namespace CoreWebApi.Configuration
@@ -27,8 +27,6 @@ namespace CoreWebApi.Configuration
                 {
                     options.SwaggerDoc("V1", GetApiInfo());
                     options.IncludeXmlComments(GetXmlCommentsFilePath());
-                    options.DescribeAllEnumsAsStrings();
-                    options.DescribeStringEnumsInCamelCase();
                     options.IgnoreObsoleteActions();
                     options.IgnoreObsoleteProperties();                    
                 });
@@ -72,9 +70,9 @@ namespace CoreWebApi.Configuration
         }
 
         
-        private static Info GetApiInfo()
+        private static OpenApiInfo GetApiInfo()
         {
-            var info = new Info
+            var info = new OpenApiInfo
             {
                 Title = "ASP.NET Core 2.2 WebAPI",
                 Version = "V1",

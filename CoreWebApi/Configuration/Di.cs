@@ -1,6 +1,8 @@
 ﻿using System;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Steeltoe.Common.HealthChecks;
+using Steeltoe.Management.Endpoint.Info;
 
 namespace CoreWebApi.Configuration
 {
@@ -20,7 +22,9 @@ namespace CoreWebApi.Configuration
         {
             // register dependencies
             services.AddSingleton(configuration);            
-            services.AddMemoryCache();            
+            services.AddMemoryCache();
+            services.AddSingleton<IHealthContributor, ApiHealthContributor>();
+            services.AddSingleton<IInfoContributor, ApiInfoContributor>();
 
             return services.BuildServiceProvider();
         }

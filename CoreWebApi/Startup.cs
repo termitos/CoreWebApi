@@ -4,6 +4,13 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Steeltoe.Management.Endpoint.Health;
+using Steeltoe.Management.Endpoint.Info;
+using Steeltoe.Management.Endpoint.Mappings;
+using Steeltoe.Management.Endpoint.Metrics;
+using Steeltoe.Management.Endpoint.Refresh;
+using Steeltoe.Management.Endpoint.ThreadDump;
+using Steeltoe.Management.Endpoint.Trace;
 
 namespace CoreWebApi
 {
@@ -45,6 +52,7 @@ namespace CoreWebApi
         /// <param name="services"></param>
         public void ConfigureServices(IServiceCollection services)
         {
+            services.ConfigureActuators(Configuration);
             services.ConfigureMvc();
             services.ConfigureCors();
             services.ConfigureSwagger(Configuration);
@@ -70,6 +78,13 @@ namespace CoreWebApi
             app.UseAuthentication();
             app.UseSwagger();
             app.UseMvc();
+            app.UseHealthActuator();
+            app.UseInfoActuator();
+            app.UseRefreshActuator();
+            app.UseMetricsActuator();
+            app.UseMappingsActuator();
+            app.UseTraceActuator();
+            app.UseThreadDumpActuator();
         }
     }
 }
