@@ -5,7 +5,7 @@ namespace CoreWebApi.Model
     /// <summary>
     /// 
     /// </summary>
-    [DynamoDBTable("CoreWebApiTable")]
+    [DynamoDBTable("corewebapitable")]
     public class Item
     {
         /// <summary>
