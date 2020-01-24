@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
 using CoreWebApi.Filters;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -94,14 +95,12 @@ namespace CoreWebApi.Configuration
         public void Contribute(IInfoBuilder builder)
         {
             var assembly = Assembly.GetEntryAssembly();
-            var assemblyVersion = assembly?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()
-                .InformationalVersion;
             var assemblyBuildDate = System.IO.File.GetLastWriteTime(assembly?.Location);
             builder.WithInfo("info", new OpenApiInfo
             {
                 Title = "ASP.NET Core 2.2 WebAPI",
-                Version = $"V1, {assemblyVersion} [{assemblyBuildDate}]",
-                Description = "ASP.NET Core 2.2 WebAPI."
+                Version = $"{Environment.GetEnvironmentVariable("APP_VERSION")}[{assemblyBuildDate}]",
+                Description = "RestFull API for dictionaries maintenance."
             });
         }
     }
