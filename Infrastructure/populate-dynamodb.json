@@ -1,0 +1,130 @@
+{
+      "CoreWebApiTable" : [
+         {
+            "PutRequest": {
+               "Item": {
+                  "Id" : {
+                     "S": "02603c43-7bde-49cf-94c3-5dbf009ebc1c"
+                  },
+				  "Name" : {
+                     "S": "Dict1"
+                  },
+                  "Key" : {
+                     "S": "Key1"
+                  },
+                  "Value" : {
+                     "S": "Value1"
+                  },
+                  "Description" : {
+                     "S": "Description1"
+                  }                  
+               }
+            }
+         },
+         {
+            "PutRequest": {
+               "Item": {
+                  "Id" : {
+                     "S": "6c4b12b6-8328-4575-9c4f-8a4d8cfb68d6"
+                  },
+				  "Name" : {
+                     "S": "Dict1"
+                  },
+                  "Key" : {
+                     "S": "Key2"
+                  },
+                  "Value" : {
+                     "S": "Value2"
+                  },
+                  "Description" : {
+                     "S": "Description2"
+                  }
+               }
+            }
+         },
+		 {
+            "PutRequest": {
+               "Item": {
+                  "Id" : {
+                     "S": "e707d14d-a7dd-4c55-ae53-f8fb3bc6d11a"
+                  },
+				  "Name" : {
+                     "S": "Dict1"
+                  },
+                  "Key" : {
+                     "S": "Key3"
+                  },
+                  "Value" : {
+                     "S": "Value3"
+                  },
+                  "Description" : {
+                     "S": "Description3"
+                  }
+               }
+            }
+         },
+		 {
+            "PutRequest": {
+               "Item": {
+                  "Id" : {
+                     "S": "4a810ecc-a950-4350-ba24-d30e4d2fa493"
+                  },
+				  "Name" : {
+                     "S": "Dict2"
+                  },
+                  "Key" : {
+                     "S": "Key1"
+                  },
+                  "Value" : {
+                     "S": "Value1"
+                  },
+                  "Description" : {
+                     "S": "Description1"
+                  }
+               }
+            }
+         },
+		 {
+            "PutRequest": {
+               "Item": {
+                  "Id" : {
+                     "S": "c4361542-7a79-471b-a5a6-842bf2efb391"
+                  },
+				  "Name" : {
+                     "S": "Dict2"
+                  },
+                  "Key" : {
+                     "S": "Key2"
+                  },
+                  "Value" : {
+                     "S": "Value2"
+                  },
+                  "Description" : {
+                     "S": "Description2"
+                  }
+               }
+            }
+         },
+		 {
+            "PutRequest": {
+               "Item": {
+                  "Id" : {
+                     "S": "77ebd348-d2e8-4554-b1d7-393bcfeec6fa"
+                  },
+				  "Name" : {
+                     "S": "Dict2"
+                  },
+                  "Key" : {
+                     "S": "Key3"
+                  },
+                  "Value" : {
+                     "S": "Value3"
+                  },
+                  "Description" : {
+                     "S": "Description3"
+                  }
+               }
+            }
+         }
+      ]
+   }

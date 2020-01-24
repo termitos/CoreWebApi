@@ -12,12 +12,16 @@
 
   <ItemGroup>
     <Compile Remove="logs\**" />
+    <Compile Remove="out\**" />
     <Compile Remove="publish\**" />
     <Content Remove="logs\**" />
+    <Content Remove="out\**" />
     <Content Remove="publish\**" />
     <EmbeddedResource Remove="logs\**" />
+    <EmbeddedResource Remove="out\**" />
     <EmbeddedResource Remove="publish\**" />
     <None Remove="logs\**" />
+    <None Remove="out\**" />
     <None Remove="publish\**" />
   </ItemGroup>
 
@@ -26,6 +30,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="AWSSDK.DynamoDBv2" Version="3.3.104.22" />
+    <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="3.3.100.1" />
     <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.2.0" PrivateAssets="All" />
     <PackageReference Include="Microsoft.Extensions.PlatformAbstractions" Version="1.1.0" />
